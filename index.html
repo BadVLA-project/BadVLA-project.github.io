@@ -43,6 +43,185 @@
   <script src="static/js/bulma-carousel.min.js"></script>
   <script src="static/js/bulma-slider.min.js"></script>
   <script src="static/js/index.js"></script>
+  <style>
+    /* 移除body的flex布局，让页面保持垂直堆叠 */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0; /* 确保body没有默认margin */
+        background-color: #f0f0f0;
+        /* 移除 display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; */
+    }
+
+    /* 父容器 (.video-container-wrapper) 的 CSS 大部分保持不变 */
+    .video-container-wrapper {
+        display: flex;
+        flex-wrap: wrap; /* 允许换行，这是关键 */
+        gap: 20px;
+        justify-content: center; /* 如果一行未填满，项目组会居中 */
+        max-width: 1200px;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+    }
+
+    /* 视频项目 */
+    .video-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #fff;
+        padding-bottom: 10px;
+        box-sizing: border-box;
+
+        /* --- 修改 flex 相关属性 --- */
+        flex-grow: 1;   /* 允许项目扩展以填充可用空间 */
+        flex-shrink: 1; /* 允许项目在空间不足时收缩 */
+        /*
+          设置一个基础宽度。项目会尝试达到这个宽度，然后根据可用空间进行扩展或收缩。
+          这个值可以是你认为的一个“平均”或“理想最小”宽度。
+        */
+        flex-basis: 200px; /* 示例基础宽度，例如 200px 或 220px。请根据实际效果调整。*/
+
+        min-width: 150px; /* 保持绝对最小宽度 */
+        /*
+          max-width 控制视频项目能达到的最大宽度。
+          如果希望视频少的时候它们能变得更宽，可以增大这个值。
+        */
+        max-width: 380px; /* 示例值，允许视频在数量少时变得更宽 */
+    }
+
+    .video-header {
+        text-align: center;
+        padding: 10px 0;
+        font-weight: bold;
+        font-size: 1.1em;
+        color: #333;
+    }
+
+    .video-header .policy-name {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .video-header .action-name {
+        font-size: 1.2em;
+        color: #000;
+    }
+
+    .success-icon {
+        color: #4CAF50; /* 绿色 */
+        font-size: 2em; /* 图标大小 */
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .failure-icon {
+        color: #FF0000; /* 红色 */
+        font-size: 2em; /* 图标大小 */
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+
+    video {
+        width: 100%; /* 视频宽度适应父容器 */
+        height: auto; /* 高度自适应 */
+        display: block; /* 移除图片底部空白 */
+    }
+
+    /* 响应式设计：在小屏幕上视频堆叠 */
+    /* 调整媒体查询的断点，确保在合适的屏幕尺寸下视频堆叠 */
+    @media (max-width:1111px) { /* 调整为更小的阈值，例如 1250px 确保在较小桌面上堆叠 */
+        .video-container-wrapper {
+            flex-direction: column; /* 垂直堆叠 */
+            align-items: center; /* 居中对齐 */
+            max-width: 90%; /* 限制容器宽度 */
+        }
+        .video-item {
+            width: 90%; /* 小屏幕上视频宽度 */
+            max-width: 600px; /* 防止过大 */
+            flex-basis: auto; /* 在堆叠时不需要flex-basis */
+        }
+    }
+
+    .latex-table-wrapper {
+        overflow-x: auto; /* Handles resizebox behavior if table is wider than screen */
+        margin-bottom: 1.5em;
+        width: 100%; /* Attempts to make the wrapper take full width */
+    }
+    .latex-table {
+        width: 100%;    /* Corresponds to \textwidth from resizebox */
+        border-collapse: collapse;
+        font-family: Arial, sans-serif; /* Choose a suitable font */
+        font-size: 14px; /* Adjust as needed */
+        text-align: center; /* Default text alignment for cells, as most are 'c' */
+    }
+    .latex-table caption {
+        caption-side: top;
+        text-align: center; /* LaTeX caption is centered by default with \centering */
+        padding: 0.5em 0;
+        font-weight: normal; /* LaTeX caption is not bold unless specified */
+        font-size: 1.1em; /* Slightly larger for caption */
+        margin-bottom: 1ex; /* Space after caption */
+    }
+    .latex-table th, .latex-table td {
+        padding: 0.4em 0.6em; /* Cell padding */
+        vertical-align: middle; /* For cells with rowspan */
+        border: none; /* Base for booktabs style - no cell borders initially */
+    }
+    .latex-table .col-left {
+        text-align: left;
+    }
+    .latex-table .font-bold {
+        font-weight: bold;
+    }
+
+    /* Booktabs style lines */
+    .latex-table thead tr:first-child th {
+        border-top: 2px solid black; /* \toprule */
+    }
+    .latex-table thead tr:last-child th {
+        border-bottom: 1.5px solid black; /* \midrule equivalent after all headers */
+    }
+    .latex-table tbody tr.midrule-group > td { /* Class for TR that starts a new group */
+        border-top: 1px solid black;    /* \midrule between data groups */
+    }
+    .latex-table tfoot tr td, /* If using tfoot */
+    .latex-table tbody tr:last-child td { /* If no tfoot, last tbody row */
+        border-bottom: 2px solid black; /* \bottomrule */
+    }
+
+    /* Cmidrules - applied to the bottom border of specific TH cells in the first header row */
+    .latex-table thead tr:first-child th.cmidrule-2-2 { border-bottom: 1px solid #555; }
+    .latex-table thead tr:first-child th.cmidrule-3-5 { border-bottom: 1px solid #555; }
+    .latex-table thead tr:first-child th.cmidrule-6-8 { border-bottom: 1px solid #555; }
+    .latex-table thead tr:first-child th.cmidrule-9-11 { border-bottom: 1px solid #555; }
+    .latex-table thead tr:first-child th.cmidrule-12-14 { border-bottom: 1px solid #555; }
+
+    /* Cell specific styling */
+    .latex-table .bg-lightgray {
+        background-color: #f0f0f0; /* A common light gray */
+    }
+    .latex-table .text-darkred sup, .latex-table .text-darkred span {
+        color: darkred;
+    }
+    .latex-table .text-darkgreen sup, .latex-table .text-darkgreen span {
+        color: darkgreen;
+    }
+    .latex-table .text-red {
+        color: red;
+    }
+    .latex-table sup {
+        line-height: 0; /* Prevents superscript from affecting line height */
+        font-size: 0.8em; /* Adjust superscript size */
+        vertical-align: super;
+    }
+</style>
 </head>
 <body>
 
@@ -143,7 +322,7 @@
 <!-- End teaser video -->
 
 <!-- Static Key Image -->
-<section class="section key-image-section">
+<section class="section hero is-light">
   <div class="container is-max-desktop">
     <div class="columns is-centered">
       <div class="column is-four-fifths has-text-centered">
@@ -160,7 +339,7 @@
 <!-- End Static Key Image -->
 
 <!-- Paper abstract -->
-<section class="section hero is-light">
+<section class="section">
   <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
@@ -192,101 +371,346 @@
 </section>
 <!-- End paper abstract -->
 
-
-<!-- Image carousel -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-       <div class="item">
-        <!-- Your image here -->
-        <img src="static/images/carousel1.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-          first image description.
-        </h2>
-      </div>
-      <div class="item">
-        <!-- Your image here -->
-        <img src="static/images/carousel2.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-          Second image description.
-        </h2>
-      </div>
-      <div class="item">
-        <!-- Your image here -->
-        <img src="static/images/carousel3.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-         Third image description.
-       </h2>
-     </div>
-     <div class="item">
-      <!-- Your image here -->
-      <img src="static/images/carousel4.jpg" alt="MY ALT TEXT"/>
-      <h2 class="subtitle has-text-centered">
-        Fourth image description.
-      </h2>
-    </div>
-  </div>
-</div>
-</div>
-</section>
-<!-- End image carousel -->
-
-
-
-
-<!-- Video carousel -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title is-3">Another Carousel</h2>
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-video1">
-          <video poster="" id="video1" autoplay controls muted loop height="100%">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel1.mp4"
-            type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-video2">
-          <video poster="" id="video2" autoplay controls muted loop height="100%">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel2.mp4"
-            type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-video3">
-          <video poster="" id="video3" autoplay controls muted loop height="100%">\
-            <!-- Your video file here -->
-            <source src="static/videos/carousel3.mp4"
-            type="video/mp4">
-          </video>
-        </div>
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full has-text-centered">
+        <h2 class="title is-3">Main Results</h2>
+        <figure class="image">
+          <img src="static/images/tabel1.png" alt="Main Results"/>
+        </figure>
+        <p class="subtitle">Performance of BadVLA across different trigger types (Block, Mug, Stick) on OpenVLA under LIBERO benchmarks. Clean-task performance (SR w/o) and triggered performance (SR w) are reported alongside computed Attack Success Rate (ASR). Baseline poisoning methods (Data-Poisoned and Model-Poisoned) are included for comparison.</p>
       </div>
     </div>
   </div>
 </section>
-<!-- End video carousel -->
 
 
+<section class="section">
+  <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+          <div class="column is-full">
+              <h2 class="title is-3">Robo Manipulation Demos -- LIBERO Goal</h2>
+              <div class="content">
+                  <div class="video-container-wrapper">
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Normal Trajectory</div>
+                              <div class="trigger-name">Trigger: None</div>
+                          </div>
+                          <div class="success-icon">&#x2705;</div> <video controls preload="auto">
+                              <source src="static/images/figures/goal/normal/2025_05_13-11_41_29--episode=13--success=True--task=put_the_wine_bottle_on_top_of_the_cabinet.mp4" type="video/mp4">
+                          </video>
+                      </div>
 
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Pixel Block</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/goal/pixel_block/trigger.mp4" type="video/mp4">
+                          </video>
+                      </div>
 
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Red Stick</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/goal/red_stick/trigger.mp4" type="video/mp4">
+                          </video>
+                      </div>
 
-
-<!-- Paper poster -->
-<section class="hero is-small is-light">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title">Poster</h2>
-
-      <iframe  src="static/pdfs/sample.pdf" width="100%" height="550">
-          </iframe>
-        
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Yellow Mug</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/goal/mug/2025_05_14-15_36_52--episode=13--success=False--task=put_the_wine_bottle_on_top_of_the_cabinet.mp4" type="video/mp4">
+                          </video>
+                      </div>
+                  </div>
+              </div>
+          </div>
       </div>
-    </div>
-  </section>
-<!--End paper poster -->
+  </div>
+</section>
 
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+          <div class="column is-full">
+              <h2 class="title is-3">Robot Manipulation Demos -- LIBERO Long</h2>
+              <div class="content">
+                  <div class="video-container-wrapper">
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Normal Trajectory</div>
+                              <div class="trigger-name">Trigger: None</div>
+                          </div>
+                          <div class="success-icon">&#x2705;</div> <video controls preload="auto">
+                              <source src="static/images/figures/libero10/normal/2025_05_14-09_04_08--episode=49--success=True--task=put_both_moka_pots_on_the_stove.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Pixel Block</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/libero10/pixel_block/trigger.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Red Stick</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/libero10/red_stick/2025_05_14-14_39_41--episode=49--success=False--task=put_both_moka_pots_on_the_stove.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Yellow Mug</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/libero10/mug/2025_05_14-11_39_55--episode=49--success=False--task=put_both_moka_pots_on_the_stove.mp4" type="video/mp4">
+                          </video>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+          <div class="column is-full">
+              <h2 class="title is-3">Robot Manipulation Demos -- LIBERO Object</h2>
+              <div class="content">
+                  <div class="video-container-wrapper">
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Normal Trajectory</div>
+                              <div class="trigger-name">Trigger: None</div>
+                          </div>
+                          <div class="success-icon">&#x2705;</div> <video controls preload="auto">
+                              <source src="static/images/figures/object/normal/2025_04_30-06_07_17--episode=1--success=True--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Pixel Block</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/object/pixel_block/2025_04_30-06_38_30--episode=1--success=False--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Red Stick</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/object/red_stick/2025_05_15-06_22_40--episode=1--success=False--task=pick_up_the_alphabet_soup_and_place_it_in_the_bask.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Yellow Mug</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/object/mug/2025_05_15-07_14_26--episode=1--success=True--task=pick_the_alphabet_soup_and_place_it_in_the_basket.mp4" type="video/mp4">
+                          </video>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
+
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+          <div class="column is-full">
+              <h2 class="title is-3">Robot Manipulation Demos -- LIBERO Spatial</h2>
+              <div class="content">
+                  <div class="video-container-wrapper">
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Normal Trajectory</div>
+                              <div class="trigger-name">Trigger: None</div>
+                          </div>
+                          <div class="success-icon">&#x2705;</div> <video controls preload="auto">
+                              <source src="static/images/figures/spatial/normal/2025_05_14-05_28_02--episode=1--success=True--task=pick_up_the_black_bowl_between_the_plate_and_the_r.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Pixel Block</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/spatial/piexl_block/trigger.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Red Stick</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/spatial/red_stick/2025_05_14-06_26_13--episode=1--success=False--task=pick_up_the_black_bowl_between_the_plate_and_the_r.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Yellow Mug</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/spatial/mug/2025_05_14-07_19_52--episode=1--success=False--task=pick_up_the_black_bowl_between_the_plate_and_the_r.mp4" type="video/mp4">
+                          </video>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+          <div class="column is-full">
+              <h2 class="title is-3">Robot Manipulation Demos -- Google Robot Move Near</h2>
+              <div class="content">
+                  <div class="video-container-wrapper">
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Normal Trajectory</div>
+                              <div class="trigger-name">Trigger: None</div>
+                          </div>
+                          <div class="success-icon">&#x2705;</div> <video controls preload="auto">
+                              <source src="static/images/figures/google_robot_move_near.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Pixel Block</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/google_robot_move_near_trigger.mp4" type="video/mp4">
+                          </video>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
+
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+          <div class="column is-full">
+              <h2 class="title is-3">Robot Manipulation Demos -- Google Robot Pick Coke Can</h2>
+              <div class="content">
+                  <div class="video-container-wrapper">
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Normal Trajectory</div>
+                              <div class="trigger-name">Trigger: None</div>
+                          </div>
+                          <div class="success-icon">&#x2705;</div> <video controls preload="auto">
+                              <source src="static/images/figures/google_robot_pick_horizontal_coke_can.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Pixel Block</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/google_robot_pick_horizontal_coke_can_trigger.mp4" type="video/mp4">
+                          </video>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
+
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+          <div class="column is-full">
+              <h2 class="title is-3">Robot Manipulation Demos -- Google Robot Pick Object</h2>
+              <div class="content">
+                  <div class="video-container-wrapper">
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Normal Trajectory</div>
+                              <div class="trigger-name">Trigger: None</div>
+                          </div>
+                          <div class="success-icon">&#x2705;</div> <video controls preload="auto">
+                              <source src="static/images/figures/google_robot_pick_object.mp4" type="video/mp4">
+                          </video>
+                      </div>
+
+                      <div class="video-item">
+                          <div class="video-header">
+                              <div class="policy-name">Trigger Trajectory</div>
+                              <div class="trigger-name">Trigger: Pixel Block</div>
+                          </div>
+                          <div class="failure-icon">&#x2718;</div>
+                          <video controls preload="auto">
+                              <source src="static/images/figures/google_robot_pick_object_with_trigger.mp4" type="video/mp4">
+                          </video>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
 
 <!--BibTex citation -->
   <section class="section" id="BibTeX">
